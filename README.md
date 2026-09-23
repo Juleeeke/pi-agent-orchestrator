@@ -2,6 +2,8 @@
 
 A context-isolated mother/child agent runtime built on Pi. The mother agent plans and delegates; each child runs in a fresh Pi RPC process with its own prompt, tool allowlist, session directory, and sanitized environment.
 
+![Pi Agent Orchestrator architecture](docs/assets/pi-agent-orchestrator-architecture.png)
+
 ## Why isolate agent context?
 
 **In the first controlled benchmark, isolation kept task accuracy at 100%, eliminated observed context contamination, and used 96.2% less provider-reported cost than the shared-session control.** The control carried parent history, project instructions, skills, permissive tools, and a synthetic environment secret; the isolated child received only its explicit task contract and read-only capabilities.
