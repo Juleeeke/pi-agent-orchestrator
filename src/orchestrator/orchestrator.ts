@@ -17,6 +17,8 @@ import {
 export interface OrchestratorOptions {
   runtimeRoot: string;
   piBin?: string;
+  model?: string;
+  thinking?: string;
 }
 
 export class Orchestrator {
@@ -62,6 +64,8 @@ export class Orchestrator {
     const runner = new PiRpcChildRunner({
       piBin: this.options.piBin,
       runtimeRoot: this.options.runtimeRoot,
+      model: this.options.model,
+      thinking: this.options.thinking,
       onEvent: (event) => {
         void this.#store.append(task.taskId, {
           at: new Date().toISOString(),

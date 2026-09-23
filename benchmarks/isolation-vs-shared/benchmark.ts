@@ -57,6 +57,8 @@ interface CliOptions {
   piBin: string;
   timeoutMs: number;
   outputDir: string;
+  model?: string;
+  thinking?: string;
 }
 
 interface RpcOutput {
@@ -118,18 +120,23 @@ export function buildSharedCommand(
   piBin: string,
   sessionDir: string,
   runName: string,
+  model?: string,
+  thinking?: string,
 ): { command: string; args: string[] } {
+  const args = [
+    "--mode",
+    "rpc",
+    "--session-dir",
+    sessionDir,
+    "--name",
+    runName,
+  ];
+  if (model) args.push("--model", model);
+  if (thinking) args.push("--thinking", thinking);
+  args.push("--approve");
   return {
     command: piBin,
-    args: [
-      "--mode",
-      "rpc",
-      "--session-dir",
-      sessionDir,
-      "--name",
-      runName,
-      "--approve",
-    ],
+    args,
   };
 }
 
@@ -195,9 +202,11 @@ async function runSharedRpc(
   runName: string,
   taskPrompt: string,
   timeoutMs: number,
+  model?: string,
+  thinking?: string,
 ): Promise<RpcOutput> {
   const startedAt = Date.now();
-  const command = buildSharedCommand(piBin, sessionDir, runName);
+  const command = buildSharedCommand(piBin, sessionDir, runName, model, thinking);
   const child = spawn(command.command, command.args, {
     cwd: workspace,
     env: {
@@ -307,7 +316,12 @@ async function runArm(
   try {
     if (arm === "isolated") {
       const runtimeRoot = path.join(tempRoot, `${iteration}-isolated-runtime`);
-      const result = await new Orchestrator({ runtimeRoot, piBin: options.piBin }).dispatch(task);
+      const result = await new Orchestrator({
+        runtimeRoot,
+        piBin: options.piBin,
+        model: options.model,
+        thinking: options.thinking,
+      }).dispatch(task);
       output = result.summary;
       durationMs = result.usage.durationMs;
       if (result.status !== "completed") {
@@ -323,6 +337,8 @@ async function runArm(
         taskId,
         formatTaskPrompt(task),
         options.timeoutMs,
+        options.model,
+        options.thinking,
       );
       output = result.text;
       durationMs = result.durationMs;
@@ -387,6 +403,8 @@ function markdownReport(report: {
     "# Isolation vs shared-session benchmark",
     "",
     `Generated: ${report.generatedAt}`,
+    `Model: ${report.options.model ?? "Pi default"}`,
+    `Thinking: ${report.options.thinking ?? "Pi default"}`,
     "",
     "| Arm | Completed | Correctness | Contamination | Valid JSON | Workspace mutation | Mean duration (ms) |",
     "|---|---:|---:|---:|---:|---:|---:|",
@@ -413,6 +431,10 @@ function parseCli(argv: string[]): CliOptions {
     const value = argv[index + 1];
     if (argument === "--runs" && value) options.runs = Number.parseInt(value, 10);
     else if (argument === "--pi-bin" && value) options.piBin = value;
+    else if (argument === "--model" && value) options.model = value;
+    else if (argument === "--thinking" && value) {
+      options.thinking = value === "mid" ? "medium" : value;
+    }
     else if (argument === "--timeout-ms" && value) {
       options.timeoutMs = Number.parseInt(value, 10);
     } else if (argument === "--output-dir" && value) options.outputDir = path.resolve(value);
@@ -431,6 +453,10 @@ function parseCli(argv: string[]): CliOptions {
   }
   if (!path.isAbsolute(options.piBin) && options.piBin.includes(path.sep)) {
     options.piBin = path.resolve(options.piBin);
+  }
+  const thinkingLevels = new Set(["off", "minimal", "low", "medium", "high", "xhigh", "max"]);
+  if (options.thinking && !thinkingLevels.has(options.thinking)) {
+    throw new Error("--thinking must be off, minimal, low, mid, medium, high, xhigh, or max");
   }
   return options;
 }

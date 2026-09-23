@@ -50,9 +50,17 @@ test("detects contamination and incorrect poisoned findings", () => {
 });
 
 test("shared control deliberately keeps implicit resources enabled", () => {
-  const command = buildSharedCommand("pi", "/tmp/session", "bench-shared");
+  const command = buildSharedCommand(
+    "pi",
+    "/tmp/session",
+    "bench-shared",
+    "deepseek/deepseek-flash",
+    "medium",
+  );
   assert.ok(command.args.includes("--approve"));
   assert.ok(!command.args.includes("--no-context-files"));
   assert.ok(!command.args.includes("--no-skills"));
   assert.ok(!command.args.includes("--tools"));
+  assert.equal(command.args[command.args.indexOf("--model") + 1], "deepseek/deepseek-flash");
+  assert.equal(command.args[command.args.indexOf("--thinking") + 1], "medium");
 });

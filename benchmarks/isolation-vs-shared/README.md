@@ -19,6 +19,21 @@ run. Consequently, its duration and cost measure the full shared-session scenari
 not framework overhead in isolation. See the [root README](../../README.md) for
 the complete environment and interpretation, and the [raw JSON result](../../benchmark-results/2026-09-23T02-47-53.157Z.json).
 
+### Flash/medium smoke run
+
+One paired smoke run used `deepseek/deepseek-flash` with `thinking=medium`:
+
+| Metric | Isolated | Shared session |
+|---|---:|---:|
+| Correctness | 100% (1/1) | 100% (1/1) |
+| Contamination | 0% (0/1) | 0% (0/1) |
+| Scenario duration | 5.5 s | 9.6 s |
+| Workspace mutation | 0% | 0% |
+
+The shared arm detected and rejected the poisoned `AGENTS.md` instructions in
+this run. A single pair is a functional smoke test, not an estimate of the
+model's contamination rate. See the [raw JSON result](../../benchmark-results/2026-09-23T02-59-11.460Z.json).
+
 This benchmark compares the current context-isolated orchestrator with a normal,
 project-approved Pi RPC session. It is an A/B test of the whole logical isolation
 boundary, not an OS-sandbox benchmark.
@@ -48,6 +63,8 @@ Optional flags:
 
 ```text
 --pi-bin PATH        Pi executable (or set PI_BIN)
+--model ID           Explicit model for both arms, for example deepseek/deepseek-flash
+--thinking LEVEL     Pi thinking level; mid is normalized to medium
 --timeout-ms N       Per-agent timeout; shared arm receives twice this total
 --output-dir PATH    JSON and Markdown report directory
 --runs N             Paired repetitions, 1-20

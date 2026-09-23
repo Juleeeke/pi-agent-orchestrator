@@ -19,6 +19,8 @@ export interface ChildRunOutput {
 export interface PiRpcRunnerOptions {
   piBin?: string;
   runtimeRoot: string;
+  model?: string;
+  thinking?: string;
   extraEnvironmentKeys?: readonly string[];
   onEvent?: (event: unknown) => void;
 }
@@ -30,29 +32,36 @@ export interface PiCommandOptions {
   taskId: string;
   tools: readonly string[];
   systemPrompt: string;
+  model?: string;
+  thinking?: string;
 }
 
 export function buildPiCommand(options: PiCommandOptions): { command: string; args: string[] } {
+  const args = [
+    "--mode",
+    "rpc",
+    "--session-dir",
+    options.sessionDir,
+    "--name",
+    options.taskId,
+  ];
+  if (options.model) args.push("--model", options.model);
+  if (options.thinking) args.push("--thinking", options.thinking);
+  args.push(
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--no-context-files",
+    "--no-approve",
+    "--tools",
+    options.tools.join(","),
+    "--system-prompt",
+    options.systemPrompt,
+  );
   return {
     command: options.piBin,
-    args: [
-      "--mode",
-      "rpc",
-      "--session-dir",
-      options.sessionDir,
-      "--name",
-      options.taskId,
-      "--no-extensions",
-      "--no-skills",
-      "--no-prompt-templates",
-      "--no-themes",
-      "--no-context-files",
-      "--no-approve",
-      "--tools",
-      options.tools.join(","),
-      "--system-prompt",
-      options.systemPrompt,
-    ],
+    args,
   };
 }
 
@@ -91,6 +100,8 @@ export class PiRpcChildRunner {
       taskId: task.taskId,
       tools: task.allowedTools,
       systemPrompt,
+      model: this.options.model,
+      thinking: this.options.thinking,
     });
 
     const child = spawn(command, args, {

@@ -11,6 +11,8 @@ test("child command disables implicit context and resources", () => {
     taskId: "task-1",
     tools: ["read", "grep"],
     systemPrompt: "isolated",
+    model: "deepseek/deepseek-flash",
+    thinking: "medium",
   });
   assert.equal(command.command, "pi");
   for (const flag of [
@@ -23,6 +25,8 @@ test("child command disables implicit context and resources", () => {
     assert.ok(command.args.includes(flag), `missing ${flag}`);
   }
   assert.equal(command.args[command.args.indexOf("--tools") + 1], "read,grep");
+  assert.equal(command.args[command.args.indexOf("--model") + 1], "deepseek/deepseek-flash");
+  assert.equal(command.args[command.args.indexOf("--thinking") + 1], "medium");
 });
 
 test("child environment drops unrelated parent variables", () => {
