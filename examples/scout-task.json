@@ -1,0 +1,23 @@
+{
+  "version": "1",
+  "taskId": "example-scout-001",
+  "agent": "scout",
+  "objective": "Map the repository entry points and summarize how the application starts.",
+  "workspace": {
+    "path": "/absolute/path/to/repository",
+    "access": "read-only"
+  },
+  "constraints": [
+    "Do not modify files",
+    "Report only verified facts"
+  ],
+  "successCriteria": [
+    "Identify the primary entry point",
+    "Cite file paths and line numbers"
+  ],
+  "allowedTools": ["read", "grep", "find", "ls"],
+  "budgets": {
+    "timeoutMs": 300000,
+    "maxOutputChars": 50000
+  }
+}
