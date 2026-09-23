@@ -8,6 +8,7 @@
     "node": ">=22.19.0"
   },
   "scripts": {
+    "bench:isolation": "node benchmarks/isolation-vs-shared/benchmark.ts",
     "check": "npm run typecheck && npm test",
     "dev": "node src/cli.ts",
     "mother": "node src/start-mother.ts",
